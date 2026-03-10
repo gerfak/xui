@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics PRO - Главная</title>
+    <link rel="stylesheet" href="оформление.css">
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</head>
+<body>
+
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Сменить тему">🌙</button>
+
+    <header>
+        <h1>Physics PRO</h1>
+        <p>Интерактивная база знаний по физике для 7-11 классов</p>
+    </header>
+
+    <nav>
+        <a href="седьмой_класс.html">7 класс</a>
+        <a href="восьмой_класс.html">8 класс</a>
+        <a href="девятый_класс.html">9 класс</a>
+        <a href="десятый_класс.html">10 класс</a>
+	<a href="одиннадцатый_класс.html">11 класс</a>
+    </nav>
+
+    <div class="container">
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" id="formulaSearch" placeholder="Поиск любой формулы" autocomplete="off">
+                <button id="clearSearch" class="clear-search" title="Очистить">&times;</button>
+            </div>
+            <ul id="searchSuggestions" class="suggestions-list"></ul>
+        </div>
+
+        <h2>Фундаментальные константы</h2>
+        <table class="constants-table">
+            <thead>
+                <tr>
+                    <th>Величина</th>
+                    <th>Символ</th>
+                    <th>Значение</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Ускорение своб. падения</td><td>g</td><td>$9.81$ м/с²</td></tr>
+                <tr><td>Гравитационная постоянная</td><td>G</td><td>$6.67 \cdot 10^{-11}$ Н·м²/кг²</td></tr>
+                <tr><td>Скорость света в вакууме</td><td>c</td><td>$3 \cdot 10^8$ м/с</td></tr>
+                <tr><td>Заряд электрона</td><td>e</td><td>$-1.6 \cdot 10^{-19}$ Кл</td></tr>
+                <tr><td>Постоянная Планка</td><td>h</td><td>$6.63 \cdot 10^{-34}$ Дж·с</td></tr>
+                <tr><td>Число Авогадро</td><td>N_A</td><td>$6.02 \cdot 10^{23}$ моль⁻¹</td></tr>
+            </tbody>
+        </table>
+
+        <section style="margin-top: 40px; text-align: center; opacity: 0.8;">
+            <p>Выбирай нужный класс в меню сверху или воспользуйся поиском, чтобы мгновенно найти формулу и воспользоваться встроенным калькулятором.</p>
+        </section>
+    </div>
+
+    <footer>
+        <p>Обратная связь:</p>
+        <div style="margin-top: 10px;">
+            <a href="mailto:твой-email@mail.ru">📧 Email</a>
+            <a href="https://t.me/твой-ник" target="_blank">✈️ Telegram</a>
+        </div>
+        <p style="font-size: 0.8em; margin-top: 20px; opacity: 0.6;">&copy; 2026 Справочник Physics PRO.</p>
+    </footer>
+
+    <script>
+        // --- 1. ЛОГИКА ТЕМЫ (LocalStorage) ---
+        const themeBtn = document.getElementById('themeBtn');
+        function updateBtnIcon() {
+            themeBtn.innerText = document.documentElement.hasAttribute('data-theme') ? '☀️' : '🌙';
+        }
+        updateBtnIcon();
+
+        function toggleTheme() {
+            if (document.documentElement.hasAttribute('data-theme')) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateBtnIcon();
+        }
+
+        // --- 2. БАЗА ДАННЫХ ДЛЯ ГЛОБАЛЬНОГО ПОИСКА ---
+        // Сюда добавляй новые формулы по мере создания страниц
+        const globalFormulas = [
+            { name: "Скорость движения", link: "седьмой_класс.html" },
+            { name: "Плотность вещества", link: "седьмой_класс.html" },
+            { name: "Давление твердых тел", link: "седьмой_класс.html" },
+            { name: "Сила тяжести", link: "седьмой_класс.html" },
+            { name: "Закон Ома", link: "восьмой_класс.html" },
+            { name: "Количество теплоты", link: "восьмой_класс.html" },
+            { name: "Второй закон Ньютона", link: "девятый_класс.html" }
+        ];
+
+        // --- 3. ЛОГИКА ПОИСКА И КРЕСТИКА ---
+        const searchInput = document.getElementById('formulaSearch');
+        const clearBtn = document.getElementById('clearSearch');
+        const suggList = document.getElementById('searchSuggestions');
+
+        searchInput.addEventListener('input', function() {
+            const val = this.value.trim().toLowerCase();
+            
+            // Показываем/скрываем крестик
+            clearBtn.style.display = val.length > 0 ? 'block' : 'none';
+            
+            suggList.innerHTML = '';
+            
+            if (val.length < 1) {
+                suggList.style.display = 'none';
+                return;
+            }
+
+            const matches = globalFormulas.filter(f => f.name.toLowerCase().includes(val));
+
+            matches.forEach(m => {
+                const li = document.createElement('li');
+                li.innerText = m.name;
+                li.onclick = () => {
+                    // Уходим на страницу с параметром, чтобы она сама открыла нужную карточку
+                    window.location.href = m.link + "?find=" + encodeURIComponent(m.name);
+                };
+                suggList.appendChild(li);
+            });
+
+            suggList.style.display = matches.length > 0 ? 'block' : 'none';
+        });
+
+        // Кнопка очистки (крестик)
+        clearBtn.onclick = () => {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            suggList.style.display = 'none';
+            searchInput.focus();
+        };
+
+        // Закрытие списка при клике мимо
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                suggList.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
